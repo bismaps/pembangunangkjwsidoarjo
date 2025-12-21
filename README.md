@@ -1,54 +1,71 @@
 <div align="center">
-  
-  ![GitHub repo size](https://img.shields.io/github/repo-size/codewithsadee/wildvine)
-  ![GitHub stars](https://img.shields.io/github/stars/codewithsadee/wildvine?style=social)
-  ![GitHub forks](https://img.shields.io/github/forks/codewithsadee/wildvine?style=social)
-[![Twitter Follow](https://img.shields.io/twitter/follow/codewithsadee_?style=social)](https://twitter.com/intent/follow?screen_name=codewithsadee_)
-  [![YouTube Video Views](https://img.shields.io/youtube/views/6Dj881BJ5kw?style=social)](https://youtu.be/6Dj881BJ5kw)
 
-  <br />
-  <br />
+  <h2 align="center">Pembangunan GKJW Jemaat Sidoarjo</h2>
 
-  <h2 align="center">Wildvine - Charity website</h2>
+  <p align="center">
+    Website resmi untuk penggalangan dana pembangunan gedung gereja GKJW Jemaat Sidoarjo.
+    <br />
+    Menggunakan tema modern "Wildvine" yang disesuaikan dengan kebutuhan jemaat.
+  </p>
 
-  Wildvine is a fully responsive charity website, <br />Responsive for all devices, build using HTML, CSS, and JavaScript.
-
-  <a href="https://codewithsadee.github.io/wildvine/"><strong>➥ Live Demo</strong></a>
+  <a href="https://bismaps.github.io/pembangunangkjwsidoarjo/"><strong>➥ Live Demo</strong></a>
 
 </div>
 
 <br />
 
-### Demo Screeshots
+### 🌟 Fitur Utama
 
-![Wildvine Desktop Demo](./readme-images/desktop.png "Desktop Demo")
+- **Pelacakan Donasi Real-Time**: 
+  - Monitoring progres donasi untuk **Pengadaan AC** (Target: Rp 100 Juta).
+  - Monitoring progres donasi untuk **Pengadaan Multimedia** (Target: Rp 1.9 Miliar).
+  - Data donatur dapat dicek langsung melalui tabel interaktif.
 
-### Prerequisites
+- **Saluran Pembayaran Digital**:
+  - **QRIS**: Scan mudah untuk donasi via e-wallet (GoPay, OVO, Dana, dll) dan mobile banking.
+  - **Transfer Bank**: Informasi rekening BNI a.n. GKJW Jemaat Sidoarjo.
+  - Petunjuk konfirmasi transfer via WhatsApp terintegrasi.
 
-Before you begin, ensure you have met the following requirements:
+- **Responsif & Mobile-Friendly**:
+  - Tampilan optimal di perangkat Desktop dan Mobile (iPhone/Android).
+  - Hero section yang adaptif (Gambar gedung di desktop, minimalis di mobile).
 
-* [Git](https://git-scm.com/downloads "Download Git") must be installed on your operating system.
+### 🛠️ Teknologi
 
-### Run Locally
+- **Frontend**: HTML5, CSS3 (Custom Properties), JavaScript.
+- **Backend (Dev)**: PHP (untuk logika database lokal).
+- **Deployment**: GitHub Pages (Versi Statis).
 
-To run **Wildvine** locally, run this command on your git bash:
+### 🚀 Cara Menjalankan (Lokal)
 
-Linux and macOS:
+Untuk menjalankan proyek ini secara lokal dengan fitur database penuh (PHP):
 
-```bash
-sudo git clone https://github.com/codewithsadee/wildvine.git
-```
+1.  Clone repositori ini:
+    ```bash
+    git clone https://github.com/bismaps/pembangunangkjwsidoarjo.git
+    ```
+2.  Masuk ke direktori proyek:
+    ```bash
+    cd pembangunangkjwsidoarjo
+    ```
+3.  Jalankan server PHP bawaan:
+    ```bash
+    php -S localhost:8000
+    ```
+4.  Buka browser dan kunjungi `http://localhost:8000`.
 
-Windows:
+### 🌐 Deployment (GitHub Pages)
 
-```bash
-git clone https://github.com/codewithsadee/wildvine.git
-```
+Karena GitHub Pages bersifat statis:
+- File `index.html` dihasilkan dari versi PHP terakhir untuk keperluan deployment.
+- Fitur database dinamis (tambah donatur otomatis) berjalan di lingkungan lokal/server PHP, sedangkan versi web publik menampilkan snapshot data terakhir.
 
-### Contact
+### 📞 Kontak Panitia
 
-If you want to contact with me you can reach me at [Twitter](https://www.twitter.com/codewithsadee).
+Hubungi panitia pembangunan untuk informasi lebih lanjut atau konfirmasi donasi:
+- **Agus Dwi**: [Chat WhatsApp](https://wa.me/628115807088)
+- **Prana**: [Chat WhatsApp](https://wa.me/628113456746)
+- **Sih Pireno**: [Chat WhatsApp](https://wa.me/6281230522844)
 
-### License
-
-This project is **free to use** and does not contains any license.
+---
+*Copyright © 2025 GKJW Sidoarjo. All Rights Reserved.*
