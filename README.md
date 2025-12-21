@@ -8,7 +8,7 @@
     Menggunakan tema modern "Wildvine" yang disesuaikan dengan kebutuhan jemaat.
   </p>
 
-  <a href="https://bismaps.github.io/pembangunangkjwsidoarjo/"><strong>➥ Live Demo</strong></a>
+  <a href="https://pembangunangkjwsidoarjo.vercel.app/"><strong>➥ Live Demo</strong></a>
 
 </div>
 
@@ -34,7 +34,7 @@
 
 - **Frontend**: HTML5, CSS3 (Custom Properties), JavaScript.
 - **Backend (Dev)**: PHP (untuk logika database lokal).
-- **Deployment**: GitHub Pages (Versi Statis).
+- **Deployment**: Vercel (Versi Statis).
 
 ### 🚀 Cara Menjalankan (Lokal)
 
@@ -54,11 +54,11 @@ Untuk menjalankan proyek ini secara lokal dengan fitur database penuh (PHP):
     ```
 4.  Buka browser dan kunjungi `http://localhost:8000`.
 
-### 🌐 Deployment (GitHub Pages)
+### 🌐 Deployment (Vercel)
 
-Karena GitHub Pages bersifat statis:
-- File `index.html` dihasilkan dari versi PHP terakhir untuk keperluan deployment.
-- Fitur database dinamis (tambah donatur otomatis) berjalan di lingkungan lokal/server PHP, sedangkan versi web publik menampilkan snapshot data terakhir.
+Website ini di-deploy menggunakan **Vercel**:
+- File `index.html` dihasilkan dari versi PHP terakhir untuk keperluan deployment statis.
+- Fitur database dinamis berjalan di lingkungan lokal, sedangkan versi Vercel menampilkan snapshot data terakhir.
 
 ### 📞 Kontak Panitia
 
