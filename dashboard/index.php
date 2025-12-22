@@ -1,3 +1,4 @@
+<?php
 include 'auth_check.php';
 
 include '../db_connect.php';

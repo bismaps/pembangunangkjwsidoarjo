@@ -1,3 +1,4 @@
+<?php
 include 'auth_check.php';
 
 include '../db_connect.php';
@@ -68,33 +69,42 @@ $result = $conn->query($sql);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($row = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo $row['id']; ?></td>
-                                <td><?php echo $row['tanggalSetor']; ?></td>
-                                <td><?php echo htmlspecialchars($row['namaSetor']); ?></td>
-                                <td><?php echo htmlspecialchars($row['krwSetor']); ?></td>
-                                <td class="text-end fw-bold text-success">Rp <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-primary edit-btn" 
-                                            data-id="<?php echo $row['id']; ?>"
-                                            data-nama="<?php echo htmlspecialchars($row['namaSetor']); ?>"
-                                            data-tanggal="<?php echo $row['tanggalSetor']; ?>"
-                                            data-krw="<?php echo htmlspecialchars($row['krwSetor']); ?>"
-                                            data-nominal="<?php echo $row['nominal']; ?>"
-                                            data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <form action="process_donor.php" method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="delete_ac">
-                                        <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-danger delete-btn">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php endwhile; ?>
+                    <?php
+                    $sql = "SELECT * FROM donatur_ac ORDER BY id DESC";
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0):
+                        while($row = $result->fetch_assoc()):
+                    ?>
+                    <tr>
+                        <td><?php echo $row['id']; ?></td>
+                        <td><?php echo $row['tanggalSetor']; ?></td>
+                        <td><?php echo htmlspecialchars($row['namaSetor']); ?></td>
+                        <td><?php echo htmlspecialchars($row['krwSetor']); ?></td>
+                        <td class="text-end fw-bold text-success">Rp <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-primary edit-btn" 
+                                    data-id="<?php echo $row['id']; ?>"
+                                    data-nama="<?php echo htmlspecialchars($row['namaSetor']); ?>"
+                                    data-tanggal="<?php echo $row['tanggalSetor']; ?>"
+                                    data-krw="<?php echo htmlspecialchars($row['krwSetor']); ?>"
+                                    data-nominal="<?php echo $row['nominal']; ?>"
+                                    data-bs-toggle="modal" data-bs-target="#editModal">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="process_donor.php" method="POST" class="d-inline">
+                                <input type="hidden" name="action" value="delete_ac">
+                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" class="btn btn-sm btn-danger delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <?php 
+                        endwhile; 
+                    endif;
+                    ?>
                         </tbody>
                     </table>
                 </div>

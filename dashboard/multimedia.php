@@ -1,3 +1,4 @@
+<?php
 include 'auth_check.php';
 
 include '../db_connect.php';
@@ -68,7 +69,14 @@ $result = $conn->query($sql);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($row = $result->fetch_assoc()): ?>
+                            <?php
+                            // Fetch Data
+                            $sql = "SELECT * FROM donatur_multimedia ORDER BY id DESC";
+                            $result = $conn->query($sql);
+
+                            if ($result->num_rows > 0):
+                                while($row = $result->fetch_assoc()):
+                            ?>
                             <tr>
                                 <td><?php echo $row['id']; ?></td>
                                 <td><?php echo $row['tanggalSetor']; ?></td>
@@ -94,7 +102,10 @@ $result = $conn->query($sql);
                                     </form>
                                 </td>
                             </tr>
-                            <?php endwhile; ?>
+                            <?php 
+                                endwhile; 
+                            endif;
+                            ?>
                         </tbody>
                     </table>
                 </div>
