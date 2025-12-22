@@ -1,10 +1,6 @@
 <?php
 include '../db_connect.php';
-session_start();
-if (!isset($_SESSION['admin_logged_in'])) {
-    header("Location: login.php");
-    exit();
-}
+include 'auth_check.php';
 
 // Fetch Pending Transactions
 $sql = "SELECT * FROM transactions WHERE status='pending' ORDER BY upload_time DESC";

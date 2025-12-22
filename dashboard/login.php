@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    header("Location: index.php");
+    exit();
+}
 include '../db_connect.php';
 
 $error = '';
@@ -16,6 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_id'] = $row['id'];
             $_SESSION['username'] = $row['username'];
+            $_SESSION['last_activity'] = time(); // Init Timeout
             header("Location: index.php");
             exit();
         } else {
@@ -86,6 +91,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h3 class="fw-bold mb-2">Admin Panel</h3>
                 <p class="text-muted">GKJW Sidoarjo</p>
               </div>
+
+              <?php if (isset($_GET['msg']) && $_GET['msg'] == 'timeout'): ?>
+                <div class="alert alert-warning">Sesi Anda telah berakhir. Silakan login kembali.</div>
+              <?php endif; ?>
 
               <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
