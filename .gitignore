@@ -1,4 +1,26 @@
+# Credentials and Secrets
 db_config.php
 .env
-.DS_Store
+config.php
+
+# User Uploads (Sensitive Data)
+uploads/*
+!uploads/.gitkeep
+!uploads/receipts/.gitkeep
+
+# Logs and debug
 *.log
+error_log
+access.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Dependencies (if any in future)
+node_modules/
+vendor/
+
+# IDE settings
+.vscode/
+.idea/

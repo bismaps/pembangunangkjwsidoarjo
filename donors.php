@@ -2,7 +2,7 @@
 include 'db_connect.php';
 
 // Define the SQL query to fetch data
-$sql = "SELECT SUM(nominal) AS totalDonasi FROM donatur";
+$sql = "SELECT SUM(nominal) AS totalDonasi FROM donatur_ac";
 $result = $conn->query($sql);
 
 $target = 307991000;
@@ -151,7 +151,7 @@ $toGo = "Rp " . number_format($toGoValue, 0, ',', '.');
                     </thead>
                     <tbody>
                         <?php
-                        $sql = "SELECT * FROM donatur ORDER BY tanggalSetor DESC";
+                        $sql = "SELECT * FROM donatur_ac ORDER BY tanggalSetor DESC";
                         $result = $conn->query($sql);
 
                         if (!$result) {
