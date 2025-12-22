@@ -237,7 +237,8 @@ while($p = $res_progs->fetch_assoc()) {
             $('#donorsTable').DataTable({ "order": [[ 0, "desc" ]] });
 
             // Edit Handler
-            $('.edit-btn').click(function() {
+            // Edit Handler (Delegated for Pagination)
+            $(document).on('click', '.edit-btn', function() {
                 $('#edit_id').val($(this).data('id'));
                 $('#edit_program').val($(this).data('program'));
                 $('#edit_nama').val($(this).data('nama'));
@@ -246,8 +247,8 @@ while($p = $res_progs->fetch_assoc()) {
                 $('#edit_nominal').val($(this).data('nominal'));
             });
 
-            // Delete Handler
-            $('.delete-btn').click(function() {
+            // Delete Handler (Delegated for Pagination)
+            $(document).on('click', '.delete-btn', function() {
                 const form = $(this).closest('form');
                 Swal.fire({
                     title: 'Yakin hapus?',

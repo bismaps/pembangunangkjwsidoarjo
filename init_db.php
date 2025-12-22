@@ -69,14 +69,14 @@ $programs = [
         'title' => 'Pengadaan Air Conditioner', 
         'target' => 307991000, 
         'desc' => 'Dukungan untuk kenyamanan ibadah melalui pengadaan AC baru.',
-        'image' => 'assets/images/service-1.jpg' // Default placeholder
+        'image' => 'assets/images/hero.jpg' // Default placeholder
     ],
     [
         'id' => 2, 
-        'title' => 'Multimedia & Alat Musik', 
+        'title' => 'Pengadaan Multimedia', 
         'target' => 1900000000, 
         'desc' => 'Peningkatan kualitas audio visual dan alat musik gereja.',
-        'image' => 'assets/images/service-2.jpg'
+        'image' => 'assets/images/hero.jpg'
     ]
 ];
 

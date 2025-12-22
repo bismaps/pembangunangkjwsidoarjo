@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $tanggal = $_POST['tanggal'];
         $nama = $conn->real_escape_string($_POST['nama']);
         $krw = $conn->real_escape_string($_POST['krw']);
-        $nominal = str_replace('.', '', $_POST['nominal']); // Clean number
+        $nominal = $_POST['nominal']; // Input type="number" sends clean value
         $jumlah = $nominal; // Simplified, or calculate /1000 if needed
 
         $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) 
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $tanggal = $_POST['tanggal'];
         $nama = $conn->real_escape_string($_POST['nama']);
         $krw = $conn->real_escape_string($_POST['krw']);
-        $nominal = str_replace('.', '', $_POST['nominal']);
+        $nominal = $_POST['nominal'];
 
         $sql = "UPDATE donations SET 
                 program_id='$program_id', 
