@@ -9,9 +9,10 @@ Platform web donasi modern untuk pembangunan Gereja GKJW Sidoarjo, dilengkapi de
     *   Notifikasi **SweetAlert2** yang modern dan informatif.
 *   **Admin Dashboard**:
     *   **Login Aman** (Session-based).
-    *   **Verifikasi Transfer**: Review hasil scan OCR vs Gambar Asli.
+    *   **Manajemen Program (Baru)**: Tambah, Edit, dan Hapus program donasi secara dinamis (Unlimited Programs).
+    *   **Verifikasi Transfer**: Review hasil scan OCR vs Gambar Asli dengan keamanan validasi data.
     *   **Auto-Delete Policy**: Gambar bukti transfer **otomatis dihapus** dari server setelah diverifikasi/ditolak (Hemat Storage & Privasi Terjamin).
-    *   **CRUD Donatur**: Tambah, Edit, Hapus data donatur AC dan Multimedia.
+    *   **Manajemen Donatur**: Database donatur terpusat yang terhubung otomatis dengan program terkait.
     *   **Link Database**: Tombol cepat menuju Google Sheets (Database Lengkap).
 
 ## 🚀 Panduan Instalasi (Hostinger / cPanel)
@@ -47,16 +48,6 @@ Script ini akan otomatis:
 
 ---
 
-## ⚙️ Konfigurasi Donasi
-Anda dapat mengubah **Target Donasi** (Total Rupiah yang dibutuhkan) tanpa mengubah kodingan inti.
-Cukup edit file `target_config.php`:
-
-```php
-$target_ac_amount = 307991000;       // Ubah angka ini untuk target AC
-$target_multimedia_amount = 1900000000; // Ubah angka ini untuk target Multimedia
-```
-Perubahan di file ini akan otomatis terupdate di Landing Page (Progress Bar) dan Dashboard Admin.
-
 ---
 
 ## 🔐 Akses Admin
@@ -89,9 +80,36 @@ Halaman login admin berada di: `/dashboard/login.php`
 *   `uploads/`: Folder sementara untuk bukti transfer (pastikan permission **755** atau **777**).
 *   `init_db.php`: Script instalasi database.
 *   `process_receipt.php`: Logic pemrosesan upload & OCR.
-*   `target_config.php`: Konfigurasi nominal target.
 
 ---
 
 **Developed for GKJW Sidoarjo.**
 *Lightweight, Fast, and Secure.*
+
+---
+
+## 🎨 Wildvine Style Guide
+
+**Google Fonts**:
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto:wght@300;400;500;700&family=Oswald:wght@600&display=swap" rel="stylesheet">
+```
+
+**Colors (CSS Variables)**:
+```css
+--pistachio: hsl(86, 45%, 54%); /* Primary Green */
+--eerie-black-1: hsl(0, 0%, 13%); /* Dark Background */
+--baby-powder: hsl(86, 41%, 97%); /* Light Text */
+--bright-yellow-crayola: hsl(40, 100%, 50%); /* Accent */
+```
+
+**Typography**:
+*   Headings: `Oswald`
+*   Body: `Roboto`
+*   UI Elements: `Inter`
+
+**Spacing**:
+*   Section Padding: `80px`
+*   Card Shadow: `0 5px 20px -8px hsla(0, 0%, 0%, 0.15)`
