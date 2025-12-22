@@ -28,9 +28,9 @@ $result = $conn->query($sql);
         </div>
         <div class="mt-4">
             <a href="index.php"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="donations.php"><i class="fas fa-hand-holding-heart"></i> Data Donatur</a>
+            <a href="programs.php"><i class="fas fa-tasks"></i> Kelola Program</a>
             <a href="verification.php" class="active"><i class="fas fa-check-circle"></i> Verifikasi Transfer</a>
-            <a href="ac.php"><i class="fas fa-snowflake"></i> Donatur AC</a>
-            <a href="multimedia.php"><i class="fas fa-desktop"></i> Donatur Multimedia</a>
         </div>
         
         <div style="position: absolute; bottom: 30px; width: 100%;">

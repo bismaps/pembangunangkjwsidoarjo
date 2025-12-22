@@ -3,42 +3,6 @@ include 'db_connect.php';
 
 include 'target_config.php';
 
-// Donatur AC
-$sql_ac = "SELECT SUM(nominal) AS total_donasi FROM donatur_ac";
-$result_ac = $conn->query($sql_ac);
-$total_donasi_ac = $result_ac->fetch_assoc()['total_donasi'] ?? 0;
-// Target AC Query
-$target_ac = $target_ac_amount; 
-$kurang_ac = $target_ac - $total_donasi_ac;
-$persen_ac = ($target_ac > 0) ? ($total_donasi_ac / $target_ac) * 100 : 0;
-
-// Donatur Multimedia
-$sql_multimedia = "SELECT SUM(nominal) AS total_donasi FROM donatur_multimedia";
-$result_multimedia = $conn->query($sql_multimedia);
-$total_donasi_multimedia = $result_multimedia->fetch_assoc()['total_donasi'] ?? 0;
-// Target Multimedia Query
-$target_multimedia = $target_multimedia_amount;
-$kurang_multimedia = $target_multimedia - $total_donasi_multimedia;
-$persen_multimedia = ($target_multimedia > 0) ? ($total_donasi_multimedia / $target_multimedia) * 100 : 0;
-
-// Fetch ALL donors 
-$donors_ac_list = [];
-$sql_list_ac = "SELECT * FROM donatur_ac ORDER BY id ASC";
-$res_list_ac = $conn->query($sql_list_ac);
-if ($res_list_ac->num_rows > 0) {
-    while($row = $res_list_ac->fetch_assoc()) {
-        $donors_ac_list[] = $row;
-    }
-}
-// donatur_multimedia list...
-$donors_multi_list = [];
-$sql_list_m = "SELECT * FROM donatur_multimedia ORDER BY id ASC";
-$res_list_m = $conn->query($sql_list_m);
-if ($res_list_m->num_rows > 0) {
-    while($row = $res_list_m->fetch_assoc()) {
-        $donors_multi_list[] = $row;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -279,9 +243,19 @@ if ($res_list_m->num_rows > 0) {
                 
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: var(--eerie-black-2); font-weight: 500;">Tujuan Donasi</label>
-                    <select name="target_category" required style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-gray); border-radius: 8px; font-family: var(--ff-inter); font-size: 1.5rem; color: var(--eerie-black-2); outline: none; background-color: var(--white);">
-                        <option value="AC">Pengadaan AC</option>
-                        <option value="Multimedia">Pengadaan Multimedia</option>
+                    <select name="program_id" required style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-gray); border-radius: 8px; font-family: var(--ff-inter); font-size: 1.5rem; color: var(--eerie-black-2); outline: none; background-color: var(--white);">
+                        <?php
+                        // Fetch Active Programs for Dropdown
+                        $sql_drop = "SELECT * FROM programs ORDER BY id ASC";
+                        $res_drop = $conn->query($sql_drop);
+                        if ($res_drop->num_rows > 0) {
+                            while($p_item = $res_drop->fetch_assoc()) {
+                                echo '<option value="' . $p_item['id'] . '">' . htmlspecialchars($p_item['title']) . '</option>';
+                            }
+                        } else {
+                            echo '<option value="">Belum ada program aktif</option>';
+                        }
+                        ?>
                     </select>
                 </div>
 
@@ -524,65 +498,35 @@ if ($res_list_m->num_rows > 0) {
         <div class="container">
 
           <ul class="donate-list">
+            <?php
+            // Dynamic Programs Loop
+            $sql_programs = "SELECT * FROM programs ORDER BY id ASC";
+            $res_programs = $conn->query($sql_programs);
 
-            <li>
-              <div class="donate-card">
-
-                <figure class="card-banner">
-                  <img src="./assets/images/donate-1.jpg" width="520" height="325" loading="lazy" alt="Air Conditioner"
-                    class="img-cover">
-                </figure>
-
-                <div class="card-content">
-
-                  <div class="progress-wrapper">
-                    <p class="progress-text">
-                      <span>Terkumpul</span>
-
-                      <data value="<?php echo $total_donasi_ac; ?>">Rp <?php echo number_format($total_donasi_ac, 0, ',', '.'); ?></data>
-                    </p>
-
-                    <data class="progress-value" value="<?php echo $persen_ac; ?>"><?php echo number_format($persen_ac, 1); ?>%</data>
-                  </div>
-
-                  <div class="progress-box">
-                    <div class="progress" style="width: <?php echo $persen_ac; ?>%"></div>
-                  </div>
-
-                  <h3 class="h3 card-title">Pengadaan Air Conditioner</h3>
-
-                  <div class="card-wrapper">
-
-                    <p class="card-wrapper-text">
-                      <span>Target</span>
-
-                      <data class="green" value="<?php echo $target_ac; ?>">Rp <?php echo number_format($target_ac, 0, ',', '.'); ?></data>
-                    </p>
+            if ($res_programs->num_rows > 0):
+                while($prog = $res_programs->fetch_assoc()):
+                    $p_id = $prog['id'];
+                    $target = $prog['target_amount'];
                     
-                    <p class="card-wrapper-text">
-                      <span>Kurang</span>
-
-                      <data class="cyan" value="<?php echo $kurang_ac; ?>">Rp <?php echo number_format($kurang_ac, 0, ',', '.'); ?></data>
-                    </p>
-
-                  </div>
-
-                  <button class="btn btn-secondary" onclick="toggleDonors('ac')">
-                    <span>Cek Daftar Donatur</span>
-
-                    <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-                  </button>
-
-                </div>
-
-              </div>
-            </li>
-
+                    // Logic Stats
+                    $sql_sum = "SELECT SUM(nominal) as total FROM donations WHERE program_id='$p_id'";
+                    $res_sum = $conn->query($sql_sum);
+                    $stats = $res_sum->fetch_assoc();
+                    $collected = $stats['total'] ?? 0;
+                    
+                    // Calc Percent
+                    $percentage = ($target > 0) ? ($collected / $target) * 100 : 0;
+                    $shortfall = $target - $collected;
+                    $shortfall = ($shortfall < 0) ? 0 : $shortfall;
+                    
+                    // Image fallback
+                    $img = !empty($prog['image_path']) ? $prog['image_path'] : './assets/images/service-1.jpg';
+            ?>
             <li>
               <div class="donate-card">
 
                 <figure class="card-banner">
-                  <img src="./assets/images/donate-2.jpg" width="520" height="325" loading="lazy" alt="Multimedia"
+                  <img src="<?php echo htmlspecialchars($img); ?>" width="520" height="325" loading="lazy" alt="<?php echo htmlspecialchars($prog['title']); ?>"
                     class="img-cover">
                 </figure>
 
@@ -591,163 +535,123 @@ if ($res_list_m->num_rows > 0) {
                   <div class="progress-wrapper">
                     <p class="progress-text">
                       <span>Terkumpul</span>
-
-                      <data value="<?php echo $total_donasi_multimedia; ?>">Rp <?php echo number_format($total_donasi_multimedia, 0, ',', '.'); ?></data>
+                      <data value="<?php echo $collected; ?>">Rp <?php echo number_format($collected, 0, ',', '.'); ?></data>
                     </p>
 
-                    <data class="progress-value" value="<?php echo $persen_multimedia; ?>"><?php echo number_format($persen_multimedia, 1); ?>%</data>
+                    <data class="progress-value" value="<?php echo $percentage; ?>"><?php echo number_format($percentage, 1); ?>%</data>
                   </div>
 
                   <div class="progress-box">
-                    <div class="progress" style="width: <?php echo $persen_multimedia; ?>%"></div>
+                    <div class="progress" style="width: <?php echo $percentage; ?>%"></div>
                   </div>
 
-                  <h3 class="h3 card-title">Pengadaan Multimedia</h3>
+                  <h3 class="h3 card-title"><?php echo htmlspecialchars($prog['title']); ?></h3>
 
                   <div class="card-wrapper">
-
                     <p class="card-wrapper-text">
                       <span>Target</span>
-
-                      <data class="green" value="<?php echo $target_multimedia; ?>">Rp <?php echo number_format($target_multimedia, 0, ',', '.'); ?></data>
+                      <data class="green" value="<?php echo $target; ?>">Rp <?php echo number_format($target, 0, ',', '.'); ?></data>
                     </p>
-
                     <p class="card-wrapper-text">
                       <span>Kurang</span>
-
-                      <data class="cyan" value="<?php echo $kurang_multimedia; ?>">Rp <?php echo number_format($kurang_multimedia, 0, ',', '.'); ?></data>
+                      <data class="cyan" value="<?php echo $shortfall; ?>">Rp <?php echo number_format($shortfall, 0, ',', '.'); ?></data>
                     </p>
-
                   </div>
 
-                  <button class="btn btn-secondary" onclick="toggleDonors('multimedia')">
-                    <span>Cek Daftar Donatur</span>
-
-                    <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+                  <button class="btn btn-secondary" onclick="openDonorModal('<?php echo $p_id; ?>')">
+                    <span>Daftar Donatur</span>
+                    <ion-icon name="list-outline" aria-hidden="true"></ion-icon>
                   </button>
 
                 </div>
-
               </div>
             </li>
-
+            <?php endwhile; endif; ?>
           </ul>
 
         </div>
       </section>
 
       <!-- Hidden Donors List Section -->
-      <section id="donors-list-section" style="display: none; padding-bottom: 50px;">
-        <div class="container">
-            
-            <!-- AC Donors Table -->
-            <div id="donors-ac" style="display: none;">
-                <h2 class="h2 section-title" style="margin-bottom: 30px; text-align: center;">Donatur Pengadaan AC</h2>
+      
+      <!-- Dynamic Donor Modals -->
+      <div id="dynamic-modals-container">
+        <?php
+        $res_programs->data_seek(0); // Reset pointer
+        if ($res_programs->num_rows > 0):
+            while($prog = $res_programs->fetch_assoc()):
+                $p_id = $prog['id'];
+                $p_title = $prog['title'];
                 
-                <div class="table-responsive-sm" style="overflow-x: auto;">
-                    <table class="table" style="width: 100%; border-collapse: collapse; margin-bottom: 1rem; color: #555;">
+                // Fetch Donors for this Program
+                $sql_don = "SELECT * FROM donations WHERE program_id='$p_id' ORDER BY tanggalSetor DESC";
+                $res_don = $conn->query($sql_don);
+        ?>
+        <div class="modal-overlay" id="modal-<?php echo $p_id; ?>" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative;">
+                <button onclick="closeDonorModal('<?php echo $p_id; ?>')" style="position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 24px; cursor: pointer;">&times;</button>
+                
+                <h3 class="h3 section-title text-center mb-4">Donatur: <?php echo htmlspecialchars($p_title); ?></h3>
+                
+                <div class="table-responsive">
+                    <table class="table" style="width: 100%; border-collapse: collapse; color: #444;">
                         <thead>
-                            <tr style="background-color: #f8f9fa;">
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Tanggal</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Nama</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Asal</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: center; font-weight: 600;">Jumlah</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: right; font-weight: 600;">Nominal</th>
+                            <tr style="background: #f4f4f4; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 12px; text-align: left;">Tanggal</th>
+                                <th style="padding: 12px; text-align: left;">Nama</th>
+                                <th style="padding: 12px; text-align: left;">Asal</th>
+                                <th style="padding: 12px; text-align: right;">Nominal</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            if (!empty($donors_ac_list)) {
-                                foreach ($donors_ac_list as $row) {
-                                    echo "<tr style='border-bottom: 1px solid #dee2e6;'>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["tanggalSetor"]) . "</td>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["namaSetor"]) . "</td>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["krwSetor"] ?? '-') . "</td>
-                                        <td style='padding: 12px; text-align: center;'>" . htmlspecialchars($row["jumlahSatuan"]) . "</td>
-                                        <td style='padding: 12px; text-align: right; font-weight: 500;'>Rp " . number_format($row["nominal"], 0, ',', '.') . "</td>
-                                    </tr>";
+                            <?php 
+                            if ($res_don->num_rows > 0) {
+                                while($d = $res_don->fetch_assoc()) {
+                                    echo "<tr style='border-bottom: 1px solid #eee;'>";
+                                    echo "<td style='padding: 10px;'>" . htmlspecialchars($d['tanggalSetor']) . "</td>";
+                                    echo "<td style='padding: 10px;'>" . htmlspecialchars($d['namaSetor']) . "</td>";
+                                    echo "<td style='padding: 10px;'>" . htmlspecialchars($d['krwSetor']) . "</td>";
+                                    echo "<td style='padding: 10px; text-align: right;'>Rp " . number_format($d['nominal'], 0, ',', '.') . "</td>";
+                                    echo "</tr>";
                                 }
                             } else {
-                                echo "<tr><td colspan='5' style='text-align: center; padding: 20px;'>Belum ada data donatur</td></tr>";
+                                echo "<tr><td colspan='4' class='text-center py-4'>Belum ada data donatur.</td></tr>";
                             }
                             ?>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- Multimedia Donors Table -->
-            <div id="donors-multimedia" style="display: none;">
-                <h2 class="h2 section-title" style="margin-bottom: 30px; text-align: center;">Donatur Pengadaan Multimedia</h2>
-                
-                <div class="table-responsive-sm" style="overflow-x: auto;">
-                    <table class="table" style="width: 100%; border-collapse: collapse; margin-bottom: 1rem; color: #555;">
-                        <thead>
-                            <tr style="background-color: #f8f9fa;">
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Tanggal</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Nama</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: left; font-weight: 600;">Asal</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: center; font-weight: 600;">Jumlah</th>
-                                <th style="padding: 15px; border-bottom: 2px solid #dee2e6; text-align: right; font-weight: 600;">Nominal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            if (!empty($donors_multi_list)) {
-                                foreach ($donors_multi_list as $row) {
-                                    echo "<tr style='border-bottom: 1px solid #dee2e6;'>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["tanggalSetor"]) . "</td>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["namaSetor"]) . "</td>
-                                        <td style='padding: 12px;'>" . htmlspecialchars($row["krwSetor"] ?? '-') . "</td>
-                                        <td style='padding: 12px; text-align: center;'>" . htmlspecialchars($row["jumlahSatuan"]) . "</td>
-                                        <td style='padding: 12px; text-align: right; font-weight: 500;'>Rp " . number_format($row["nominal"], 0, ',', '.') . "</td>
-                                    </tr>";
-                                }
-                            } else {
-                                echo "<tr><td colspan='5' style='text-align: center; padding: 20px;'>Belum ada data donatur</td></tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
         </div>
-      </section>
+        <?php endwhile; endif; ?>
+      </div>
 
       <script>
-      function toggleDonors(type) {
-          const section = document.getElementById('donors-list-section');
-          const acDiv = document.getElementById('donors-ac');
-          const mDiv = document.getElementById('donors-multimedia');
-
-          if (type === 'ac') {
-              if (acDiv.style.display === 'block' && section.style.display === 'block') {
-                   // Already open, toggle close
-                   section.style.display = 'none';
-                   acDiv.style.display = 'none';
-              } else {
-                   // Open AC
-                   section.style.display = 'block';
-                   acDiv.style.display = 'block';
-                   mDiv.style.display = 'none';
-                   section.scrollIntoView({behavior: "smooth"});
-              }
-          } else if (type === 'multimedia') {
-              if (mDiv.style.display === 'block' && section.style.display === 'block') {
-                   // Already open, toggle close
-                   section.style.display = 'none';
-                   mDiv.style.display = 'none';
-              } else {
-                   // Open Multimedia
-                   section.style.display = 'block';
-                   mDiv.style.display = 'block';
-                   acDiv.style.display = 'none';
-                   section.scrollIntoView({behavior: "smooth"});
-              }
+      function openDonorModal(id) {
+          const modal = document.getElementById('modal-' + id);
+          if(modal) {
+              modal.style.display = 'flex';
+              document.body.style.overflow = 'hidden'; // Prevent scrolling
+          }
+      }
+      function closeDonorModal(id) {
+          const modal = document.getElementById('modal-' + id);
+          if(modal) {
+              modal.style.display = 'none';
+              document.body.style.overflow = 'auto';
+          }
+      }
+      // Close on click outside
+      window.onclick = function(event) {
+          if (event.target.classList.contains('modal-overlay')) {
+              event.target.style.display = 'none';
+              document.body.style.overflow = 'auto';
           }
       }
       </script>
+
+
+      
 
 
 

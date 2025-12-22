@@ -1,64 +1,100 @@
 <?php
 include 'db_connect.php';
 
-// Create tables if not exist
+// Drop old tables if they exist (Clean Slate Strategy)
+$conn->query("DROP TABLE IF EXISTS donatur_ac");
+$conn->query("DROP TABLE IF EXISTS donatur_multimedia");
+
+// Create Tables
 $table_schema = "
-CREATE TABLE IF NOT EXISTS donatur_ac (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    tanggalSetor DATE NOT NULL,
-    namaSetor VARCHAR(255) NOT NULL,
-    krwSetor VARCHAR(50),
-    jumlahSatuan DECIMAL(15,2),
-    nominal DECIMAL(15,2) NOT NULL
-);
-CREATE TABLE IF NOT EXISTS donatur_multimedia (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    tanggalSetor DATE NOT NULL,
-    namaSetor VARCHAR(255) NOT NULL,
-    krwSetor VARCHAR(50),
-    jumlahSatuan DECIMAL(15,2),
-    nominal DECIMAL(15,2) NOT NULL
-);
 CREATE TABLE IF NOT EXISTS users (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS programs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    target_amount DECIMAL(15,2) DEFAULT 0,
+    description TEXT,
+    image_path VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS donations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    program_id INT NOT NULL,
+    tanggalSetor DATE NOT NULL,
+    namaSetor VARCHAR(255) NOT NULL,
+    krwSetor VARCHAR(50),
+    jumlahSatuan DECIMAL(15,2), -- (Optional: for internal calculation)
+    nominal DECIMAL(15,2) NOT NULL,
+    FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_name VARCHAR(255),
+    target_category VARCHAR(255),
+    program_id INT DEFAULT NULL,
     ocr_text TEXT,
-    extracted_amount DECIMAL(15,2),
+    extracted_nominal DECIMAL(15,2) DEFAULT 0,
     extracted_date DATE,
     image_path VARCHAR(255),
-    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    upload_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'
 );
 ";
 
 if ($conn->multi_query($table_schema)) {
-    echo "Tables created or already exist.\n";
-    while ($conn->next_result()) {;}
+    echo "Tables created successfully.\n";
+    while ($conn->next_result()) {;} // Flush multi_query
 } else {
     die("Error creating tables: " . $conn->error . "\n");
 }
 
-// Seed Admin User
-// DEFAULT PASSWORD: admin123 (Please change immediately after login)
+// 1. Seed Admin
 $default_password = "admin123"; 
 $admin_pass = password_hash($default_password, PASSWORD_DEFAULT);
-
 $sql_user = "INSERT IGNORE INTO users (username, password) VALUES ('admin', '$admin_pass')";
-if ($conn->query($sql_user) === TRUE) {
-    echo "Admin user seeded.\n";
-} else {
-    echo "Error seeding admin: " . $conn->error . "\n";
+$conn->query($sql_user);
+
+
+// 2. Seed Programs
+// We use INSERT IGNORE or Check existence to avoid duplicates on re-run
+$programs = [
+    [
+        'id' => 1, 
+        'title' => 'Pengadaan Air Conditioner', 
+        'target' => 307991000, 
+        'desc' => 'Dukungan untuk kenyamanan ibadah melalui pengadaan AC baru.',
+        'image' => 'assets/images/service-1.jpg' // Default placeholder
+    ],
+    [
+        'id' => 2, 
+        'title' => 'Multimedia & Alat Musik', 
+        'target' => 1900000000, 
+        'desc' => 'Peningkatan kualitas audio visual dan alat musik gereja.',
+        'image' => 'assets/images/service-2.jpg'
+    ]
+];
+
+foreach ($programs as $p) {
+    $title = $conn->real_escape_string($p['title']);
+    $desc = $conn->real_escape_string($p['desc']);
+    $sql_prog = "INSERT INTO programs (id, title, target_amount, description, image_path) 
+                 VALUES ({$p['id']}, '$title', {$p['target']}, '$desc', '{$p['image']}')
+                 ON DUPLICATE KEY UPDATE title='$title', target_amount={$p['target']}";
+    $conn->query($sql_prog);
 }
 
-// Truncate tables (Reset Data)
-$conn->query("TRUNCATE TABLE donatur_ac");
-$conn->query("TRUNCATE TABLE donatur_multimedia");
-$conn->query("TRUNCATE TABLE transactions");
 
-// Data for AC (donatur table)
+// 3. Seed Donors (Migrated Data)
+// We truncate `donations` to ensure clean seed state, or check if empty. 
+// For dev/init, TRUNCATE is safer to avoid duplication.
+$conn->query("TRUNCATE TABLE donations");
+
 $donors_ac = [
     ["PHMJ", 17500000, "Sidoarjo"],
     ["NRN", 500000, "Sidoarjo"],
@@ -90,33 +126,36 @@ $donors_ac = [
     ["BPS", 250000, "Tiberias"]
 ];
 
-// Data for Multimedia (donatur_multimedia table)
-$donors_multimedia = [];
+$donors_multimedia = []; // Empty for now
 
-
-function insert_donors($conn, $table, $data) {
+function insert_donations($conn, $program_id, $data) {
     if (empty($data)) return;
-    $sql = "INSERT INTO $table (tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) VALUES ";
+    
+    $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) VALUES ";
     $values = [];
     $date = date('Y-m-d');
+    
     foreach ($data as $d) {
         $name = $conn->real_escape_string($d[0]);
         $nominal = $d[1];
         $krw = isset($d[2]) ? $conn->real_escape_string($d[2]) : 'Sidoarjo';
-        $jumlah = $nominal / 1000;
-        $values[] = "('$date', '$name', '$krw', '$jumlah', '$nominal')";
+        $jumlah = $nominal / 1000; // Legacy logic
+        
+        $values[] = "($program_id, '$date', '$name', '$krw', '$jumlah', '$nominal')";
     }
-    $sql .= implode(", ", $values);
     
-    if ($conn->query($sql) === TRUE) {
-        echo "Data inserted into $table successfully.\n";
-    } else {
-        echo "Error inserting into $table: " . $conn->error . "\n";
+    if (!empty($values)) {
+        $sql .= implode(", ", $values);
+        if ($conn->query($sql) === TRUE) {
+            echo "Donations for Program ID $program_id seeded.\n";
+        } else {
+            echo "Error seeding donations: " . $conn->error . "\n";
+        }
     }
 }
 
-insert_donors($conn, "donatur_ac", $donors_ac);
-insert_donors($conn, "donatur_multimedia", $donors_multimedia);
+insert_donations($conn, 1, $donors_ac); // 1 = AC
+insert_donations($conn, 2, $donors_multimedia); // 2 = Multimedia
 
 $conn->close();
 ?>
