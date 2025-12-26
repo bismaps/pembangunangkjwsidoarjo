@@ -40,22 +40,7 @@ $res_programs = $conn->query($sql_programs);
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="brand">
-            <i class="fas fa-church me-3"></i> GKJW Admin
-        </div>
-        <div class="mt-4">
-            <a href="index.php" class="active"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="donations.php"><i class="fas fa-hand-holding-heart"></i> Data Donatur</a>
-            <a href="programs.php"><i class="fas fa-tasks"></i> Kelola Program</a>
-            <a href="verification.php"><i class="fas fa-check-circle"></i> Verifikasi Transfer</a>
-        </div>
-        
-        <div style="position: absolute; bottom: 30px; width: 100%;">
-            <a href="../index.php"><i class="fas fa-external-link-alt"></i> Lihat Website</a>
-            <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <!-- Main Content -->
     <div class="main-content">

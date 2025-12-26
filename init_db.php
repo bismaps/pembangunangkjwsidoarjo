@@ -1,9 +1,15 @@
 <?php
 include 'db_connect.php';
 
-// Drop old tables if they exist (Clean Slate Strategy)
+// Drop all tables for a full reset (As requested)
+$conn->query("SET FOREIGN_KEY_CHECKS = 0");
 $conn->query("DROP TABLE IF EXISTS donatur_ac");
 $conn->query("DROP TABLE IF EXISTS donatur_multimedia");
+$conn->query("DROP TABLE IF EXISTS donations");
+$conn->query("DROP TABLE IF EXISTS transactions");
+$conn->query("DROP TABLE IF EXISTS programs");
+$conn->query("DROP TABLE IF EXISTS users");
+$conn->query("SET FOREIGN_KEY_CHECKS = 1");
 
 // Create Tables
 $table_schema = "
@@ -27,6 +33,7 @@ CREATE TABLE IF NOT EXISTS donations (
     program_id INT NOT NULL,
     tanggalSetor DATE NOT NULL,
     namaSetor VARCHAR(255) NOT NULL,
+    alias_name VARCHAR(255) DEFAULT 'Hamba Allah',
     krwSetor VARCHAR(50),
     jumlahSatuan DECIMAL(15,2), -- (Optional: for internal calculation)
     nominal DECIMAL(15,2) NOT NULL,
@@ -36,6 +43,7 @@ CREATE TABLE IF NOT EXISTS donations (
 CREATE TABLE IF NOT EXISTS transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_name VARCHAR(255),
+    alias_name VARCHAR(255),
     target_category VARCHAR(255),
     program_id INT DEFAULT NULL,
     ocr_text TEXT,
@@ -131,17 +139,18 @@ $donors_multimedia = []; // Empty for now
 function insert_donations($conn, $program_id, $data) {
     if (empty($data)) return;
     
-    $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) VALUES ";
+    $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, alias_name, krwSetor, jumlahSatuan, nominal) VALUES ";
     $values = [];
     $date = date('Y-m-d');
     
     foreach ($data as $d) {
         $name = $conn->real_escape_string($d[0]);
+        $alias = substr($name, 0, 1) . '...'; // Auto-generate alias from first letter
         $nominal = $d[1];
         $krw = isset($d[2]) ? $conn->real_escape_string($d[2]) : 'Sidoarjo';
         $jumlah = $nominal / 1000; // Legacy logic
         
-        $values[] = "($program_id, '$date', '$name', '$krw', '$jumlah', '$nominal')";
+        $values[] = "($program_id, '$date', '$name', '$alias', '$krw', '$jumlah', '$nominal')";
     }
     
     if (!empty($values)) {

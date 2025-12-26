@@ -22,22 +22,7 @@ $result = $conn->query($sql);
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="brand">
-            <i class="fas fa-church me-3"></i> GKJW Admin
-        </div>
-        <div class="mt-4">
-            <a href="index.php"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="donations.php"><i class="fas fa-hand-holding-heart"></i> Data Donatur</a>
-            <a href="programs.php"><i class="fas fa-tasks"></i> Kelola Program</a>
-            <a href="verification.php" class="active"><i class="fas fa-check-circle"></i> Verifikasi Transfer</a>
-        </div>
-        
-        <div style="position: absolute; bottom: 30px; width: 100%;">
-            <a href="../index.php"><i class="fas fa-external-link-alt"></i> Lihat Website</a>
-            <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -101,10 +86,10 @@ $result = $conn->query($sql);
                                                     <div class="text-center mb-3">
                                                         <?php if (!empty($row['image_path']) && file_exists("../" . $row['image_path'])): ?>
                                                             <div style="border: 1px solid #ddd; padding: 5px; border-radius: 8px; display: inline-block;">
-                                                                <img src="../<?php echo $row['image_path']; ?>" alt="Bukti Transfer" class="img-fluid" style="max-height: 300px; border-radius: 4px;">
+                                                                <img src="../<?php echo htmlspecialchars($row['image_path']); ?>" alt="Bukti Transfer" class="img-fluid" style="max-height: 300px; border-radius: 4px;">
                                                             </div>
                                                             <div class="mt-2">
-                                                                <a href="../<?php echo $row['image_path']; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                                <a href="../<?php echo htmlspecialchars($row['image_path']); ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
                                                                     <i class="fas fa-external-link-alt"></i> Buka Full Size
                                                                 </a>
                                                             </div>
@@ -118,12 +103,17 @@ $result = $conn->query($sql);
                                                     <div class="alert alert-info py-2" style="font-size: 0.9rem;">
                                                         <i class="fas fa-info-circle me-1"></i> 
                                                         OCR Raw Text: <br>
-                                                        <small class="text-muted"><?php echo substr(htmlspecialchars($row['ocr_raw_text']), 0, 200) . '...'; ?></small>
+                                                        <small class="text-muted"><?php echo substr(htmlspecialchars($row['ocr_text'] ?? ''), 0, 200) . '...'; ?></small>
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label>Nama Donatur</label>
-                                                        <input type="text" name="nama" class="form-control" value="<?php echo htmlspecialchars($row['sender_name']); ?>" required>
+                                                        <label>Nama Donatur (Asli)</label>
+                                                        <input type="text" name="nama" class="form-control" value="<?php echo htmlspecialchars($row['sender_name']); ?>" required oninput="updateAlias(this)">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label>Nama Samaran (Alias)</label>
+                                                        <input type="text" name="alias" class="form-control" value="<?php echo htmlspecialchars(substr($row['sender_name'], 0, 1) . '...'); ?>" required>
+                                                        <small class="text-muted">Untuk tampilan publik (Privasi).</small>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label>Tanggal Transaksi</label>
@@ -164,6 +154,17 @@ $result = $conn->query($sql);
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script>
+        function updateAlias(input) {
+            let name = input.value.trim();
+            let alias = name.length > 0 ? name.charAt(0).toUpperCase() + "..." : "NN";
+            // Find the alias input in the same form
+            let form = input.closest('form');
+            let aliasInput = form.querySelector('input[name="alias"]');
+            if (aliasInput) {
+                aliasInput.value = alias;
+            }
+        }
+
         $(document).ready(function() {
             $('#verificationTable').DataTable({
                 "order": [[ 0, "desc" ]] // Sort by Upload Time (Column 0) Descending

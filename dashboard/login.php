@@ -17,6 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         if (password_verify($password, $row['password'])) {
+            session_regenerate_id(true); // Prevent Session Fixation
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_id'] = $row['id'];
             $_SESSION['username'] = $row['username'];

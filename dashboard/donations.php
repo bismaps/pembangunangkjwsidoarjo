@@ -90,19 +90,25 @@ while($p = $res_progs->fetch_assoc()) {
                             <tr>
                                 <th>#ID</th>
                                 <th>Tanggal</th>
-                                <th>Nama</th>
-                                <th>Program</th> <!-- New Column -->
-                                <th>Asal / Ket</th>
+                                <th>Nama (Alias)</th>
+                                <th>Program</th>
+                                <th>Asal</th>
                                 <th class="text-end">Nominal</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if ($result->num_rows > 0): while($row = $result->fetch_assoc()): ?>
+                            <?php 
+                            if ($result->num_rows > 0):
+                                while($row = $result->fetch_assoc()):
+                            ?>
                             <tr>
                                 <td><?php echo $row['id']; ?></td>
                                 <td><?php echo date('d/m/Y', strtotime($row['tanggalSetor'])); ?></td>
-                                <td class="fw-500"><?php echo htmlspecialchars($row['namaSetor']); ?></td>
+                                <td class="fw-500">
+                                    <strong><?php echo htmlspecialchars($row['namaSetor']); ?></strong><br>
+                                    <small class="text-muted">Alias: <?php echo htmlspecialchars($row['alias_name'] ?? '-'); ?></small>
+                                </td>
                                 <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($row['program_title']); ?></span></td>
                                 <td><?php echo htmlspecialchars($row['krwSetor']); ?></td>
                                 <td class="text-end fw-bold text-success">Rp <?php echo number_format($row['nominal'], 0, ',', '.'); ?></td>
@@ -111,6 +117,7 @@ while($p = $res_progs->fetch_assoc()) {
                                             data-id="<?php echo $row['id']; ?>"
                                             data-program="<?php echo $row['program_id']; ?>"
                                             data-nama="<?php echo htmlspecialchars($row['namaSetor']); ?>"
+                                            data-alias="<?php echo htmlspecialchars($row['alias_name'] ?? ''); ?>"
                                             data-tanggal="<?php echo $row['tanggalSetor']; ?>"
                                             data-krw="<?php echo htmlspecialchars($row['krwSetor']); ?>"
                                             data-nominal="<?php echo $row['nominal']; ?>"
@@ -158,8 +165,13 @@ while($p = $res_progs->fetch_assoc()) {
                             <input type="date" name="tanggal" class="form-control" required value="<?php echo date('Y-m-d'); ?>">
                         </div>
                         <div class="mb-3">
-                            <label>Nama Donatur</label>
-                            <input type="text" name="nama" class="form-control" required placeholder="Contoh: NN">
+                            <label>Nama Donatur (Asli)</label>
+                            <input type="text" name="nama" class="form-control" required placeholder="Contoh: Ali Mustofa">
+                        </div>
+                        <div class="mb-3">
+                            <label>Nama Samaran (Alias)</label>
+                            <input type="text" name="alias" class="form-control" placeholder="Contoh: Hamba Allah">
+                            <small class="text-muted">Kosongkan jika ingin menggunakan Hamba Allah.</small>
                         </div>
                         <div class="mb-3">
                             <label>Asal / Keterangan</label>
@@ -209,6 +221,10 @@ while($p = $res_progs->fetch_assoc()) {
                             <input type="text" name="nama" id="edit_nama" class="form-control" required>
                         </div>
                         <div class="mb-3">
+                            <label>Nama Samaran (Alias)</label>
+                            <input type="text" name="alias" id="edit_alias" class="form-control">
+                        </div>
+                        <div class="mb-3">
                             <label>Asal / Keterangan</label>
                             <input type="text" name="krw" id="edit_krw" class="form-control">
                         </div>
@@ -241,8 +257,9 @@ while($p = $res_progs->fetch_assoc()) {
             $(document).on('click', '.edit-btn', function() {
                 $('#edit_id').val($(this).data('id'));
                 $('#edit_program').val($(this).data('program'));
-                $('#edit_nama').val($(this).data('nama'));
                 $('#edit_tanggal').val($(this).data('tanggal'));
+                $('#edit_nama').val($(this).data('nama'));
+                $('#edit_alias').val($(this).data('alias'));
                 $('#edit_krw').val($(this).data('krw'));
                 $('#edit_nominal').val($(this).data('nominal'));
             });

@@ -10,15 +10,33 @@ include 'db_connect.php';
         
         // File Validation
         $file = $_FILES['receipt_image'];
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+        $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         
-        if (!in_array($file['type'], $allowed_types)) {
+        if (!in_array($file_ext, $allowed_extensions)) {
             echo "<script>alert('Format file tidak valid. Gunakan JPG atau PNG.'); window.location.href='index.php';</script>";
             exit();
         }
         
         if ($file['size'] > 5 * 1024 * 1024) { // 5MB Limit
             echo "<script>alert('Ukuran file terlalu besar (Max 5MB).'); window.location.href='index.php';</script>";
+            exit();
+        }
+
+        // --- VALIDATION: KEYWORD CHECK (Strict Mode) ---
+        $keywords = ['GKJW', 'SIDOARJO', 'GEREJA', 'JAWI WETAN', '5956666669'];
+        $is_valid_receipt = false;
+        
+        // Check if at least one keyword exists
+        foreach ($keywords as $kw) {
+             if (stripos($ocr_text, $kw) !== false) {
+                 $is_valid_receipt = true;
+                 break;
+             }
+        }
+
+        if (!$is_valid_receipt) {
+            echo "<script>alert('Bukti transfer tidak valid atau tujuan salah. Pastikan bukti transfer ditujukan ke GKJW Sidoarjo.'); window.location.href='index.php';</script>";
             exit();
         }
     
@@ -75,10 +93,16 @@ include 'db_connect.php';
         }
     
         // 2. Extract Date
-        // Matches: 20/12/2024, 20-12-24, 1/12/2024, 20 Dec 2024
-        if (preg_match('/(\d{1,2})[\/\-\s](\d{1,2}|Jan|Feb|Mar|Apr|Mei|Jun|Jul|Agt|Sep|Okt|Nov|Des)[\/\-\s](\d{2,4})/', $ocr_text, $date_match)) {
+        // Matches: 20/12/2024, 20-12-24, 1/12/2024, 20 Dec 2024, 20 Januari 2024
+        // Regex explanation:
+        // (\d{1,2})       : Day (1 or 2 digits)
+        // [\/\-\s]        : Separator (slash, dash, space)
+        // ([a-zA-Z]+|\d{1,2}) : Month (Text or Digits)
+        // [\/\-\s]        : Separator
+        // (\d{2,4})       : Year (2 or 4 digits)
+        if (preg_match('/(\d{1,2})[\/\-\s]([a-zA-Z]+|\d{1,2})[\/\-\s](\d{2,4})/', $ocr_text, $date_match)) {
             $day = str_pad($date_match[1], 2, '0', STR_PAD_LEFT);
-            $month_str = $date_match[2];
+            $month_str = $date_match[2]; // Can be '12', 'Jan', 'Januari'
             $year = $date_match[3];
             
             // Handle 2 digit year
@@ -86,16 +110,37 @@ include 'db_connect.php';
                 $year = "20" . $year;
             }
     
-            // Map months if text
+            // Map months (Text to Number)
+            // Normalize case to Title Case or Lower for matching
+            $month_str_lower = strtolower($month_str);
+            
             $months = [
-                'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'Mei' => '05', 'Jun' => '06',
-                'Jul' => '07', 'Agt' => '08', 'Sep' => '09', 'Okt' => '10', 'Nov' => '11', 'Des' => '12'
+                // Short
+                'jan' => '01', 'peb' => '02', 'feb' => '02', 'mar' => '03', 'apr' => '04', 'mei' => '05', 'jun' => '06',
+                'jul' => '07', 'agu' => '08', 'agt' => '08', 'sep' => '09', 'okt' => '10', 'nop' => '11', 'nov' => '11', 'des' => '12',
+                // Full Indonesian
+                'januari' => '01', 'februari' => '02', 'maret' => '03', 'april' => '04', 
+                'juni' => '06', 'juli' => '07', 'agustus' => '08', 'september' => '09', 
+                'oktober' => '10', 'november' => '11', 'desember' => '12',
+                // English Context (Optional)
+                'february' => '02', 'march' => '03', 'may' => '05', 'june' => '06', 'july' => '07', 
+                'august' => '08', 'october' => '10', 'december' => '12'
             ];
-            if (isset($months[$month_str])) {
-                $month = $months[$month_str];
-            } else {
+            
+            if (isset($months[$month_str_lower])) {
+                $month = $months[$month_str_lower];
+            } elseif (is_numeric($month_str)) {
                  $month = str_pad($month_str, 2, '0', STR_PAD_LEFT);
+            } else {
+                 // Fallback: Default to current month or error? 
+                 // Let's keep extracted_date null if month invalid
+                 $month = null;
             }
+            
+            if ($month) {
+                $extracted_date = "$year-$month-$day";
+            }
+
     
             $extracted_date = "$year-$month-$day";
         }

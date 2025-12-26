@@ -1,8 +1,6 @@
 <?php
 include 'db_connect.php';
 
-include 'target_config.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -328,21 +326,45 @@ include 'target_config.php';
                     }
                 );
 
-                // Success
+                // Success - Client-side validation
                 console.log("OCR Result:", result.data.text);
+                const ocrText = result.data.text.toUpperCase();
                 document.getElementById('ocrText').value = result.data.text;
                 
-                progressStatus.innerText = "Selesai! Mengirim data...";
-                setTimeout(() => {
-                    document.getElementById('uploadForm').submit();
-                }, 500);
+                // Strict Keywords
+                const keywords = ['GKJW', 'SIDOARJO', 'GEREJA', 'JAWI WETAN', '5956666669'];
+                let isValid = false;
+
+                for (let i = 0; i < keywords.length; i++) {
+                    if (ocrText.includes(keywords[i])) {
+                        isValid = true;
+                        break;
+                    }
+                }
+
+                if (isValid) {
+                    progressStatus.innerText = "Selesai! Mengirim data...";
+                    progressStatus.style.color = "var(--pistachio)";
+                    progressBar.style.backgroundColor = "var(--pistachio)";
+                    
+                    setTimeout(() => {
+                        document.getElementById('uploadForm').submit();
+                    }, 500);
+                } else {
+                    // Invalid - Red Progress Bar
+                    progressStatus.innerText = "Bukti transfer tidak valid/Salah tujuan.";
+                    progressStatus.style.color = "var(--vermilion)"; // Red color
+                    progressBar.style.backgroundColor = "var(--vermilion)";
+                    document.getElementById('btnSubmit').disabled = false;
+                    document.getElementById('btnSubmit').innerText = 'Kirim & Verifikasi';
+                    
+                    console.warn("OCR rejected: No matching keywords.");
+                    // Do NOT submit form
+                }
 
             } catch (error) {
                 console.error(error);
                 alert('Gagal membaca gambar. Silakan coba lagi atau upload manual.');
-                // Submit anyway so server can handle image without OCR if needed, 
-                // but for this flow we want OCR. 
-                // Let's allow submit even if OCR fails so user isn't stuck.
                 document.getElementById('uploadForm').submit();
             }
         }
@@ -609,7 +631,7 @@ include 'target_config.php';
                                 while($d = $res_don->fetch_assoc()) {
                                     echo "<tr style='border-bottom: 1px solid #eee;'>";
                                     echo "<td style='padding: 10px;'>" . htmlspecialchars($d['tanggalSetor']) . "</td>";
-                                    echo "<td style='padding: 10px;'>" . htmlspecialchars($d['namaSetor']) . "</td>";
+                                    echo "<td style='padding: 10px;'>" . htmlspecialchars($d['alias_name']) . "</td>";
                                     echo "<td style='padding: 10px;'>" . htmlspecialchars($d['krwSetor']) . "</td>";
                                     echo "<td style='padding: 10px; text-align: right;'>Rp " . number_format($d['nominal'], 0, ',', '.') . "</td>";
                                     echo "</tr>";

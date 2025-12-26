@@ -10,15 +10,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
     if ($action == "add_donation") {
-        $program_id = $_POST['program_id'];
+        $program_id = intval($_POST['program_id']);
         $tanggal = $_POST['tanggal'];
         $nama = $conn->real_escape_string($_POST['nama']);
+        $alias = $conn->real_escape_string($_POST['alias']);
+        if(empty($alias)) $alias = "Hamba Allah"; // Default if empty in Manual Add
         $krw = $conn->real_escape_string($_POST['krw']);
-        $nominal = $_POST['nominal']; // Input type="number" sends clean value
-        $jumlah = $nominal; // Simplified, or calculate /1000 if needed
+        $nominal = floatval($_POST['nominal']);
 
-        $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) 
-                VALUES ('$program_id', '$tanggal', '$nama', '$krw', '$jumlah', '$nominal')";
+        $sql = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, alias_name, krwSetor, nominal) 
+                VALUES ('$program_id', '$tanggal', '$nama', '$alias', '$krw', '$nominal')";
 
         if ($conn->query($sql) === TRUE) {
             header("Location: donations.php?msg=added");
@@ -32,13 +33,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $program_id = $_POST['program_id'];
         $tanggal = $_POST['tanggal'];
         $nama = $conn->real_escape_string($_POST['nama']);
+        $alias = $conn->real_escape_string($_POST['alias']);
         $krw = $conn->real_escape_string($_POST['krw']);
-        $nominal = $_POST['nominal'];
+        $nominal = floatval($_POST['nominal']);
 
         $sql = "UPDATE donations SET 
                 program_id='$program_id', 
                 tanggalSetor='$tanggal', 
                 namaSetor='$nama', 
+                alias_name='$alias', 
                 krwSetor='$krw', 
                 nominal='$nominal' 
                 WHERE id='$id'";

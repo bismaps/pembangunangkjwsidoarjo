@@ -10,8 +10,9 @@ if (!isset($_SESSION['admin_logged_in'])) {
 $action = $_POST['action'] ?? '';
 $id = intval($_POST['id']);
 
-if ($action == 'approve') {
+    if ($action == 'approve') {
     $nama = $conn->real_escape_string($_POST['nama']);
+    $alias = $conn->real_escape_string($_POST['alias']); // Capture Alias
     $tanggal = $conn->real_escape_string($_POST['tanggal']);
     $nominal = floatval($_POST['nominal']);
     $krw = $conn->real_escape_string($_POST['krw']);
@@ -41,8 +42,8 @@ if ($action == 'approve') {
     }
 
     // Insert into unified 'donations' table
-    $sql_insert = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, krwSetor, jumlahSatuan, nominal) 
-                   VALUES ('$program_id', '$tanggal', '$nama', '$krw', 1, '$nominal')";
+    $sql_insert = "INSERT INTO donations (program_id, tanggalSetor, namaSetor, alias_name, krwSetor, jumlahSatuan, nominal) 
+                   VALUES ('$program_id', '$tanggal', '$nama', '$alias', '$krw', 1, '$nominal')";
 
     if ($conn->query($sql_insert)) {
         // Delete Image File
